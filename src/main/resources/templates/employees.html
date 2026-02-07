@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
+<section>
+    <h2>All Employees</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Salary</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="emp : ${employees}">
+            <td th:text="${emp.personId}"></td>
+            <td th:text="${emp.name}"></td>
+            <td th:text="${emp.department?.departmentName}"></td>
+            <td th:text="${emp.salaryAmount}"></td>
+            <td>
+                <a th:href="@{/employees/{id}(id=${emp.personId})}">
+                    View
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/employees.js}"></script>
+</body>
+</html>

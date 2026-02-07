@@ -1,0 +1,153 @@
+/* Home */
+.home {
+    text-align: center;
+    margin-top: 5rem;
+}
+.home h1 {
+    font-size: 2.5rem;
+    color: #1f3a5f;
+}
+.subtitle {
+    margin-top: 1rem;
+    color: #555;
+    font-size: 1.1rem;
+}
+.home-actions {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn.primary {
+    background: #1f3a5f;
+    color: white;
+}
+.btn.secondary {
+    background: #e0e6ed;
+    color: #1f3a5f;
+}
+
+/* Auth Card */
+.auth-card {
+    background: white;
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.auth-card h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.auth-card label {
+    display: block;
+    margin-top: 1rem;
+}
+.auth-card input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+/* Errors */
+.error {
+    color: #c0392b;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Header nav */
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f1f4f8;
+}
+nav a {
+    text-decoration: none;
+    color: #1f3a5f;
+    font-weight: 500;
+}
+
+/* Employees table */
+.employees-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+.employees-list th, .employees-list td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+}
+.employees-list th {
+    background-color: #1f3a5f;
+    color: white;
+}
+.employees-list tr:hover {
+    background-color: #f0f4f8;
+}
+
+/* Employee details */
+.employee-details ul {
+    list-style: none;
+    padding: 0;
+}
+.employee-details li {
+    margin: 0.5rem 0;
+}
+
+/* Filter section */
+.filters {
+    margin: 1rem 0;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.filters label {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.filters input {
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+.filters button {
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    border: none;
+    background-color: #1f3a5f;
+    color: white;
+    cursor: pointer;
+}
+.filters button:hover {
+    background-color: #16305a;
+}
+
+/* Edit form styling */
+#edit-form-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+#edit-form-container input {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+

@@ -16,19 +16,27 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("Attempting login for: " + username);
-        return personRepository.findPersonByName(username)
+    public UserDetails loadUserByUsername(String personId) throws UsernameNotFoundException {
+        System.out.println("Attempting login for person id: " + personId);
+
+        Long id;
+        try {
+            id = Long.parseLong(personId);
+        } catch (NumberFormatException e) {
+            throw new UsernameNotFoundException("Invalid person id format: " + personId);
+        }
+
+        return personRepository.findById(id)
                 .map(person -> {
-                            System.out.println("Found user: " + person.getName());
-                            return org.springframework.security.core.userdetails.User
-                                    .withUsername(person.getName())
-                                    .password(person.getPasswordHash()) // hashed password from DB
-                                    .roles("USER")         // or whatever roles you want
-                                    .build();
-                        }
-                )
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    System.out.println("Found user: " + person.getName());
+                    return org.springframework.security.core.userdetails.User
+                            .withUsername(String.valueOf(person.getPersonId())) // use id as username
+                            .password(person.getPasswordHash()) // hashed password from DB
+                            .roles("USER") // assign roles as needed
+                            .build();
+                })
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + personId));
     }
+
 
 }

@@ -1,13 +1,11 @@
 package com.capstone.employeemanagementsystem.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @Entity
@@ -33,7 +31,6 @@ public abstract class Person {
     @NotBlank
     private String passwordHash;
 
-    @NotBlank
     @ManyToOne
     @JoinColumn(name = "departmentId")
     @JsonBackReference

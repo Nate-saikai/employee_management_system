@@ -8,7 +8,6 @@ import com.capstone.employeemanagementsystem.repositories.DepartmentRepository;
 import com.capstone.employeemanagementsystem.repositories.EmployeeRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +48,7 @@ public class EmployeeProcessingService implements ProcessingService{
         return switch (select) {
             case 1 -> ResponseEntity.ok(getAllEmployeeDetails(pageable));
             case 2 -> ResponseEntity.ok(getEmployeeDetails(id));
-            default -> throw new IllegalArgumentException("Choice is invalid!");
+            default -> ResponseEntity.ok("redirect:/home"); // As far as the code goes, this won't get tripped
         };
     }
 
@@ -65,7 +64,7 @@ public class EmployeeProcessingService implements ProcessingService{
         Department deptExists = departmentRepository.findDepartmentByDepartmentNameContainsIgnoreCase(department)
                 .orElseThrow(() -> new NoSuchElementException("This company does not have that department!"));
 
-        List<Employee> allEmpByDept = employeeRepository.findAllByDepartment(deptExists, pageable);
+        Page<Employee> allEmpByDept = employeeRepository.findAllByDepartment(deptExists, pageable);
 
         if (allEmpByDept.isEmpty()) return ResponseEntity.ok("No Employees Found");
 
@@ -81,8 +80,8 @@ public class EmployeeProcessingService implements ProcessingService{
     @Override
     public ResponseEntity<?> generateReport(Integer age, Pageable pageable) {
 
-        // TODO: test this; this is a prototype native query
-        List<Employee> empAge = employeeRepository.findEmployeesByExactAge(age);
+        /* ----------------------- NATIVE SQL IS WORKING -------------------------- */
+        Page<Employee> empAge = employeeRepository.findEmployeesByExactAge(age, pageable);
 
         return ResponseEntity.ok(empAge);
     }

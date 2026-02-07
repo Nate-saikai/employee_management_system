@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Header Fragment -->
+<header th:replace="fragments/header :: header"></header>
+
+<!-- Main SPA content -->
+<main id="app">
+    <!-- JS will render home/login/register here -->
+</main>
+
+<!-- Footer Fragment -->
+<footer th:replace="fragments/footer :: footer"></footer>
+
+<script th:src="@{/js/home.js}"></script>
+<script th:src="@{/js/login.js}"></script>
+<script th:src="@{/js/register.js}"></script>
+<script th:src="@{/js/employees.js}"></script>
+
+<script th:src="@{/js/router.js}"></script>
+
+</body>
+</html>

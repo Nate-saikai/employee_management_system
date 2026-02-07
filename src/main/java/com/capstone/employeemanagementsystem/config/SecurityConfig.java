@@ -1,5 +1,6 @@
 package com.capstone.employeemanagementsystem.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,23 +25,21 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login.html", "/register.html", "/index.html").permitAll()
-                        .requestMatchers("/**/*.css", "/**/*.js").permitAll()
-                        .requestMatchers("/api/user/register", "/api/csrf", "/debugUser").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/error").permitAll()
+                        .requestMatchers("/js/**", "/css/**").permitAll()
+                        .requestMatchers("/user/register", "/user/employees/all").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login.html")
+                        .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler((request, response, authentication) -> {
-                            response.sendRedirect("/books.html");
+                            response.sendRedirect("/employees");
                         })
                         .permitAll()
                 )
@@ -54,7 +53,21 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)   // prevent concurrent logins (optional)
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Forbidden\"}");
+                        })
                 );
+
+
 
         return http.build();
     }
