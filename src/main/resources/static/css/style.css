@@ -137,17 +137,290 @@ nav a {
     background-color: #16305a;
 }
 
-/* Edit form styling */
-#edit-form-container form {
+/* Override filter button style for .btn inside filters */
+.filters .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+/* Keep hover consistent */
+.filters .btn.primary:hover {
+    background-color: #16305a;
+}
+
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(31, 58, 95, 0.6);
+    backdrop-filter: blur(2px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Modal content */
+.modal-content {
+    background: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;           /* cap height to viewport */
+    overflow-y: auto;           /* scroll inside modal if content is tall */
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    animation: slideDown 0.3s ease;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* Close button */
+.modal-content .close {
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f3a5f;
+    cursor: pointer;
+}
+.modal-content .close:hover {
+    color: #16305a;
+}
+
+/* Form inside modal */
+.modal-content form {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 1rem;
 }
-#edit-form-container input {
+
+.modal-content label {
+    font-weight: 600;
+    color: #1f3a5f;
+}
+
+.modal-content input {
     padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-content input:focus {
+    border-color: #1f3a5f;
+    outline: none;
+    box-shadow: 0 0 4px rgba(31,58,95,0.4);
+}
+
+/* Animation */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Toast container */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Base toast style */
+.toast {
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideIn 0.3s forwards;
+}
+
+/* Variants */
+.toast.error {
+  background: #e74c3c; /* red */
+}
+.toast.success {
+  background: #2ecc71; /* green */
+}
+.toast.warning {
+  background: #f39c12; /* orange */
+}
+
+/* Animation */
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dashboard section */
+.dashboard {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.dashboard h2 {
+    margin-bottom: 1rem;
+    color: #1f3a5f;
+}
+.dashboard-values {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.dashboard-values div {
+    background: #f1f4f8;
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #1f3a5f;
+    flex: 1 1 200px;
+    text-align: center;
+}
+
+/* Employees list section */
+.employees-list {
+    margin-top: 2rem;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.employees-list h2 {
+    margin-bottom: 1rem;
+    color: #1f3a5f;
+}
+
+/* Filters bar */
+.filters {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.filters label {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    background: #f9fbfd;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+}
+.filters input {
+    padding: 0.3rem 0.5rem;
     border-radius: 4px;
     border: 1px solid #ccc;
 }
+.filters button {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: none;
+    background-color: #1f3a5f;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.filters button:hover {
+    background-color: #16305a;
+}
+
+/* Table polish */
+.employees-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.employees-list th, .employees-list td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+}
+.employees-list th {
+    background-color: #1f3a5f;
+    color: white;
+}
+.employees-list tr:nth-child(even) {
+    background-color: #f9fbfd;
+}
+.employees-list tr:hover {
+    background-color: #eef3f9;
+}
+
+/* Action buttons inside table */
+.employees-list td button {
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+}
+.employees-list td button:hover {
+    opacity: 0.9;
+}
+.employees-list td button:first-child {
+    background: #f39c12;
+    color: #fff;
+}
+.employees-list td button:last-child {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.pagination {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+.pagination button {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: none;
+    background-color: #1f3a5f;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+.pagination button:hover:not(:disabled) {
+    background-color: #16305a;
+}
+
 
 

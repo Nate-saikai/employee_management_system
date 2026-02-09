@@ -2,12 +2,11 @@ package com.capstone.employeemanagementsystem.dto;
 
 import java.time.LocalDate;
 
-public record EmployeeRegisterDto(
-        Long id,
+public record NewEmployeeDto(
+        String employeeId,
         String name,
         LocalDate dateOfBirth,
-        String password,
         Double salary,
-        String department
+        String departmentName
 ) {
 }

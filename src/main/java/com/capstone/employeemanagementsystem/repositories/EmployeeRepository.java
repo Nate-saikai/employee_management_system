@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findEmployeeByDepartmentAndNameIgnoreCase(Department department, String name);
 
+    Optional<Employee> findEmployeeByEmployeeId(String employeeId);
+
     Page<Employee> findAllByDepartment(Department department, Pageable pageable);
 
     /**
@@ -26,14 +28,14 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             value = """
         SELECT p.*
         FROM employee_table e
-        JOIN person p ON e.person_id = p.person_id
+        JOIN person_table p ON e.person_id = p.person_id
         WHERE (YEAR(CURDATE()) - YEAR(p.date_of_birth))
               - (DATE_FORMAT(CURDATE(), '%m%d') < DATE_FORMAT(p.date_of_birth, '%m%d')) = :age
         """,
             countQuery = """
         SELECT COUNT(*)
         FROM employee_table e
-        JOIN person p ON e.person_id = p.person_id
+        JOIN person_table p ON e.person_id = p.person_id
         WHERE (YEAR(CURDATE()) - YEAR(p.date_of_birth))
               - (DATE_FORMAT(CURDATE(), '%m%d') < DATE_FORMAT(p.date_of_birth, '%m%d')) = :age
         """,
@@ -53,7 +55,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             value = """
         SELECT p.*
         FROM employee_table e
-        JOIN person p ON e.person_id = p.person_id
+        JOIN person_table p ON e.person_id = p.person_id
         WHERE p.date_of_birth BETWEEN
               DATE_SUB(CURDATE(), INTERVAL :maxAge YEAR)
           AND DATE_SUB(CURDATE(), INTERVAL :minAge YEAR)
@@ -61,7 +63,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             countQuery = """
         SELECT COUNT(*)
         FROM employee_table e
-        JOIN person p ON e.person_id = p.person_id
+        JOIN person_table p ON e.person_id = p.person_id
         WHERE p.date_of_birth BETWEEN
               DATE_SUB(CURDATE(), INTERVAL :maxAge YEAR)
           AND DATE_SUB(CURDATE(), INTERVAL :minAge YEAR)
@@ -69,9 +71,4 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             nativeQuery = true
     )
     Page<Employee> findEmployeesByAgeRange(@Param("minAge") int minAge, @Param("maxAge") int maxAge, Pageable pageable);
-
-
-
-
-    boolean findEmployeeByEmployeeId(Long employeeId);
 }

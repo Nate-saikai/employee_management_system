@@ -1,6 +1,7 @@
 package com.capstone.employeemanagementsystem.services;
 
-import com.capstone.employeemanagementsystem.repositories.PersonRepository;
+import com.capstone.employeemanagementsystem.repositories.ManagerRepository;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,33 +10,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final PersonRepository personRepository;
+    private final ManagerRepository managerRepository;
 
-    public CustomUserDetailsService(PersonRepository personRepository) {
-        this.personRepository = personRepository;
+    public CustomUserDetailsService(ManagerRepository managerRepository) {
+        this.managerRepository = managerRepository;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String personId) throws UsernameNotFoundException {
-        System.out.println("Attempting login for person id: " + personId);
+    public UserDetails loadUserByUsername(String managerId) throws UsernameNotFoundException {
+        System.out.println("Attempting login for person id: " + managerId);
 
-        Long id;
-        try {
-            id = Long.parseLong(personId);
-        } catch (NumberFormatException e) {
-            throw new UsernameNotFoundException("Invalid person id format: " + personId);
-        }
-
-        return personRepository.findById(id)
+        return managerRepository.findManagerByEmployeeId(managerId)
                 .map(person -> {
                     System.out.println("Found user: " + person.getName());
                     return org.springframework.security.core.userdetails.User
-                            .withUsername(String.valueOf(person.getPersonId())) // use id as username
+                            .withUsername(person.getEmployeeId())
                             .password(person.getPasswordHash()) // hashed password from DB
-                            .roles("USER") // assign roles as needed
+                            .roles("ADMIN")
                             .build();
                 })
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + personId));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + managerId));
     }
 
 

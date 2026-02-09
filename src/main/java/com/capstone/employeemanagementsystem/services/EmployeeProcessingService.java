@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,7 +24,6 @@ import static com.capstone.employeemanagementsystem.services.MathCalculationsSer
 @Service
 public class EmployeeProcessingService implements ProcessingService{
 
-    private final PasswordEncoder passwordEncoder;
     private final DepartmentRepository departmentRepository;
 
     EmployeeRepository employeeRepository;
@@ -61,7 +59,7 @@ public class EmployeeProcessingService implements ProcessingService{
     @Override
     public ResponseEntity<?> generateReport(String department, Pageable pageable) {
 
-        Department deptExists = departmentRepository.findDepartmentByDepartmentNameContainsIgnoreCase(department)
+        Department deptExists = departmentRepository.findDepartmentByDepartmentNameIgnoreCase(department)
                 .orElseThrow(() -> new NoSuchElementException("This company does not have that department!"));
 
         Page<Employee> allEmpByDept = employeeRepository.findAllByDepartment(deptExists, pageable);
@@ -89,20 +87,20 @@ public class EmployeeProcessingService implements ProcessingService{
 
     /**
      *
-     * @param select {@code int}
+     * @param select {@link String} "add" or "delete", case-sensitive
      * @return value depends on the selected operation
      * <br><br>
      * This operation consolidates CD operations like
      * {@code addEmployee}, {@code deleteEmployee}
      * <br>
-     * DEV NOTE: This is a little funky, relying on hardcoded integers
+     * DEV NOTE: This is a little funky, relying on hardcoded strings
      */
     @Override
     @Transactional
-    public ResponseEntity<?> cdOps(int select, Employee employee) {
+    public ResponseEntity<?> cdOps(String select, Employee employee) {
         return switch (select) {
-            case 1 -> ResponseEntity.ok(addEmployee(employee));
-            case 2 -> ResponseEntity.ok(deleteEmployee(employee));
+            case "add" -> ResponseEntity.ok(addEmployee(employee));
+            case "delete" -> ResponseEntity.ok(deleteEmployee(employee));
             default -> throw new IllegalArgumentException("Choice is invalid!");
         };
     }
@@ -144,9 +142,20 @@ public class EmployeeProcessingService implements ProcessingService{
     // TODO: Improve this using DTO request payload
     protected Employee addEmployee(Employee addEmployee) {
 
-        Optional<Employee> empExists = employeeRepository.findById(addEmployee.getPersonId());
+        Optional<Employee> empExists = employeeRepository.findEmployeeByEmployeeId(addEmployee.getEmployeeId());
 
         if (empExists.isPresent()) throw new IllegalArgumentException("Employee already employed");
+
+        if (addEmployee.getDepartment() != null) {
+            Optional<Department> deptExists = departmentRepository.findDepartmentByDepartmentNameIgnoreCase(addEmployee.getDepartment().getDepartmentName());
+
+            if (deptExists.isPresent()) {
+                addEmployee.setDepartment(deptExists.get());
+            }
+            else {
+                addEmployee.setDepartment(null);
+            }
+        }
 
         return employeeRepository.save(addEmployee);
     }
@@ -176,10 +185,6 @@ public class EmployeeProcessingService implements ProcessingService{
             employee.setDateOfBirth(updateEmployeeDto.dateOfBirth());
             updated = true;
         }
-        if (updateEmployeeDto.passwordHash() != null && !updateEmployeeDto.passwordHash().isBlank()) {
-            employee.setPasswordHash(passwordEncoder.encode(updateEmployeeDto.passwordHash()));
-            updated = true;
-        }
         if(updateEmployeeDto.salary() != null) {
             employee.setSalaryAmount(updateEmployeeDto.salary());
             updated = true;
@@ -192,7 +197,7 @@ public class EmployeeProcessingService implements ProcessingService{
             // -------------------------------------------------------------------------------------
 
             Optional<Department> deptExists = departmentRepository
-                    .findDepartmentByDepartmentNameContainsIgnoreCase(updateEmployeeDto.departmentName());
+                    .findDepartmentByDepartmentNameIgnoreCase(updateEmployeeDto.departmentName());
 
             if (deptExists.isEmpty()) {
                 return ResponseEntity.badRequest().body("This department does not exist.");
@@ -208,7 +213,7 @@ public class EmployeeProcessingService implements ProcessingService{
                     .findEmployeeByDepartmentAndNameIgnoreCase(deptExists.get(), employee.getName());
 
             if (member.isPresent()) {
-                return ResponseEntity.ok("Employee already belongs to department " + updateEmployeeDto.departmentName());
+                return ResponseEntity.badRequest().body("Employee already belongs to department " + updateEmployeeDto.departmentName());
             }
 
             // -------------------------------------------------------------------------------------
@@ -231,12 +236,16 @@ public class EmployeeProcessingService implements ProcessingService{
     /* --------------------------------- AVERAGING OPERATIONS ------------------------------ */
     /* ------------------------------------------------------------------------------------- */
 
-    public Integer ageAverage() {
+    public Double ageAverage() {
 
         List<Employee> allEmployees = employeeRepository.findAll();
 
+        if (allEmployees.isEmpty()) {
+            return 0d;
+        }
+
         return allEmployees.stream()
-                .mapToInt(emp -> calculateAge(
+                .mapToDouble(emp -> calculateAge(
                         emp.getDateOfBirth(),
                         LocalDate.now()))
                 .sum() / allEmployees.size();
@@ -246,9 +255,20 @@ public class EmployeeProcessingService implements ProcessingService{
 
         List<Employee> allEmployees = employeeRepository.findAll();
 
-        return allEmployees.stream()
+        if (allEmployees.isEmpty()) {
+            return 0d;
+        }
+
+        double salSum = allEmployees.stream()
                 .mapToDouble(Person::getSalaryAmount)
-                .sum() / allEmployees.size();
+                .sum();
+
+        if (salSum < 1) {
+            return 0d;
+        }
+        else {
+            return salSum / allEmployees.size();
+        }
 
 
     }

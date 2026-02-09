@@ -11,5 +11,5 @@ public interface ProcessingService {
 
     ResponseEntity<?> generateReport(Integer age, Pageable pageable);
 
-    ResponseEntity<?> cdOps(int select, Employee employee);
+    ResponseEntity<?> cdOps(String select, Employee employee);
 }

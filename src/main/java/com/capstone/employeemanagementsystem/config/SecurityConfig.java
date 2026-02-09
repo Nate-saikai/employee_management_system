@@ -31,8 +31,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/register", "/error").permitAll()
-                        .requestMatchers("/js/**", "/css/**").permitAll()
-                        .requestMatchers("/user/register", "/user/employees/all").permitAll()
+                        .requestMatchers("/js/**", "/css/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/user/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -52,7 +52,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .maximumSessions(1)   // prevent concurrent logins (optional)
+                        .maximumSessions(1)
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {

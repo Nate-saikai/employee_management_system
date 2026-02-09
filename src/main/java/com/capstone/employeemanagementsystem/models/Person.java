@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 @Data
 @Entity
+@Table(name = "PersonTable")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Person {
     @Id
@@ -17,7 +18,7 @@ public abstract class Person {
 
     @Column(nullable = false, unique = true)
     @NotBlank
-    private Long employeeId;
+    private String employeeId;
 
     @Column(nullable = false)
     @NotBlank
@@ -27,10 +28,6 @@ public abstract class Person {
     @NotBlank
     private LocalDate dateOfBirth;
 
-    @Column(nullable = false)
-    @NotBlank
-    private String passwordHash;
-
     @ManyToOne
     @JoinColumn(name = "departmentId")
     @JsonBackReference
@@ -39,4 +36,5 @@ public abstract class Person {
     @Column
     @NotBlank
     private Double salaryAmount;
+
 }

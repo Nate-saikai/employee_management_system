@@ -20,7 +20,7 @@ public class DepartmentProcessingService {
     @Transactional
     public Department addDepartment(String departmentName) {
 
-        Optional<Department> deptExists = departmentRepository.findDepartmentByDepartmentNameContainsIgnoreCase(departmentName);
+        Optional<Department> deptExists = departmentRepository.findDepartmentByDepartmentNameIgnoreCase(departmentName);
 
         if (deptExists.isPresent()) throw new IllegalArgumentException("Department already exists");
 

@@ -6,21 +6,43 @@ function loadRegisterPage() {
             <h2>Register Employee</h2>
             <form id="register-form">
                 <label>Employee ID</label>
-                <input type="number" name="employeeId" required />
+                <input type="text" name="employeeId" id="safeInput" pattern="[A-Za-z0-9-]+" title="Only letters, numbers, and dashes allowed" required />
                 <label>Name</label>
-                <input type="text" name="name" required />
+                <input type="text" name="name" id="safeInput" pattern="[A-Za-z0-9-]+" title="Only letters and numbers allowed" required />
                 <label>Date of Birth</label>
-                <input type="date" name="dateOfBirth" required />
+                <input type="date" id="dateField" name="dateOfBirth" required />
                 <label>Password</label>
                 <input type="password" name="password" required />
                 <label>Salary</label>
-                <input type="number" name="salary" required />
+                <input type="number" step="any" name="salary"/>
                 <label>Department</label>
-                <input type="text" name="departmentName" required />
+                <input type="text" name="departmentName"/>
                 <button class="btn primary" type="submit">Register</button>
             </form>
         </section>
     `;
+
+    // Listener for text input
+    const input = document.getElementById("safeInput");
+    input.addEventListener("input", () => {
+        if (!input.checkValidity()) {
+            input.reportValidity(); // shows the native bubble
+        }
+    });
+
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    const maxDate = `${yyyy}-${mm}-${dd}`;
+
+    // Set the max attribute of the date input
+    const dateInput = document.getElementById('dateField');
+    if (dateInput) {
+        dateInput.setAttribute('max', maxDate);
+    }
 
     document.getElementById("register-form")
         .addEventListener("submit", async function(event) {
@@ -45,7 +67,7 @@ function loadRegisterPage() {
                 });
 
                 if (response.ok) {
-                    alert("Employee registered!");
+                    alert("Manager registered!");
                     history.pushState({}, "", "/");
                     route();
                 } else {

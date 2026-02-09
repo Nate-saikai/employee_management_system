@@ -1,11 +1,9 @@
 package com.capstone.employeemanagementsystem.services;
 
-import com.capstone.employeemanagementsystem.dto.EmployeeRegisterDto;
-import com.capstone.employeemanagementsystem.models.Employee;
-import com.capstone.employeemanagementsystem.models.Person;
+import com.capstone.employeemanagementsystem.dto.EmployeeDto;
+import com.capstone.employeemanagementsystem.models.Manager;
 import com.capstone.employeemanagementsystem.repositories.DepartmentRepository;
-import com.capstone.employeemanagementsystem.repositories.EmployeeRepository;
-import com.capstone.employeemanagementsystem.repositories.PersonRepository;
+import com.capstone.employeemanagementsystem.repositories.ManagerRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,31 +15,41 @@ import java.util.NoSuchElementException;
 @Service
 public class UserRegisterService {
 
-    private final EmployeeRepository employeeRepository;
+    private final ManagerRepository managerRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PersonRepository personRepository;
     private final DepartmentRepository departmentRepository;
 
     @Transactional
-    public void registerUser (EmployeeRegisterDto employee) {
+    public void registerUser (EmployeeDto manager) {
 
-        if (employeeRepository.findEmployeeByEmployeeId(employee.id())) {
-            throw new IllegalArgumentException("Employee already exists!");
+        if (managerRepository.findManagerByEmployeeId(manager.id()).isPresent()) {
+            throw new IllegalArgumentException("User already exists!");
         }
 
-        Person newEmployee = new Employee();
-        newEmployee.setEmployeeId(employee.id());
-        newEmployee.setName(employee.name());
-        newEmployee.setDateOfBirth(employee.dateOfBirth());
-        newEmployee.setSalaryAmount(employee.salary());
-        newEmployee.setPasswordHash(passwordEncoder.encode(employee.password()));
+        Manager newManager = new Manager();
+        newManager.setEmployeeId(manager.id());
+        newManager.setName(manager.name());
+        newManager.setDateOfBirth(manager.dateOfBirth());
 
-        // TODO: Is volatile, will see whether payload returns empty string
-        newEmployee.setDepartment(departmentRepository.findDepartmentByDepartmentNameIgnoreCase(employee.department())
-                .orElseThrow(() -> new NoSuchElementException("Department not Found")));
+        if (manager.salary() == null || manager.salary().isNaN()) {
+            newManager.setSalaryAmount(0.00);
+        }
+        else {
+            newManager.setSalaryAmount(manager.salary());
+        }
 
-        // TODO: Check database after use, might not update child employee
-        personRepository.save(newEmployee);
+        newManager.setPasswordHash(passwordEncoder.encode(manager.password()));
+
+        if (manager.department().isBlank()) {
+            newManager.setDepartment(null);
+        }
+        else {
+            newManager.setDepartment(departmentRepository.findDepartmentByDepartmentNameIgnoreCase(manager.department())
+                    .orElseThrow(() -> new NoSuchElementException("Department not Found")));
+        }
+
+        /* works, child employee updated */
+        managerRepository.save(newManager);
 
 
 
