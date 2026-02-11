@@ -1,9 +1,11 @@
+const API_EMP_BASE = "/user/employees"
+
 let currentEditEmployeeId = null;
 let employeesCache = [];
 
 // Pagination variables
 let currentPage = 0;
-const pageSize = 10;
+const pageSize = 5;
 let totalPages = 0;
 
 async function loadEmployeesPage(page = 0) {
@@ -12,7 +14,7 @@ async function loadEmployeesPage(page = 0) {
 
     try {
         // Fetch all employees initially
-        const employees = await fetchEmployees(`/user/employees/all?page=${page}&size=${pageSize}`);
+        const employees = await fetchEmployees(`${API_EMP_BASE}/all?page=${page}&size=${pageSize}`);
         if (employees === null) return;
         renderEmployees(employees);
 
@@ -52,8 +54,8 @@ async function fetchEmployees(url) {
 
 async function loadDashboard() {
     try {
-        const ageResponse = await fetch("/user/employees/aveAge", { credentials: "same-origin" });
-        const salaryResponse = await fetch("/user/employees/aveSalary", { credentials: "same-origin" });
+        const ageResponse = await fetch(`${API_EMP_BASE}/aveAge`, { credentials: "same-origin" });
+        const salaryResponse = await fetch(`${API_EMP_BASE}/aveSalary`, { credentials: "same-origin" });
 
         if (ageResponse.ok) {
             const age = await ageResponse.text(); // backend returns plain number/string
@@ -71,11 +73,13 @@ async function loadDashboard() {
 
 function nextPage() {
     loadEmployeesPage(currentPage + 1);
+    currentPage += 1;
 }
 
 function prevPage() {
     if (currentPage > 0) {
         loadEmployeesPage(currentPage - 1);
+        currentPage -= 1;
     }
 }
 
@@ -120,14 +124,15 @@ function renderEmployees(employees) {
         </section>
 
         <section class="employees-list">
+            <a href="/departments" class="btn secondary" onclick="navigate(event)">Department Management</a>
             <h2>Employees</h2>
             <div class="filters">
                 <label>Filter by Age:
-                    <input type="number" id="filter-age" min="18" placeholder="Exact age">
+                    <input type="number" id="filter-age" min="21" placeholder="Exact age">
                     <button onclick="filterByAge()">Apply</button>
                 </label>
                 <label>Filter by Department:
-                    <input type="text" id="filter-department" placeholder="Department name">
+                    <input type="text" id="filter-department" class="department" placeholder="Department name">
                     <button onclick="filterByDepartment()">Apply</button>
                 </label>
                 <button onclick="loadEmployeesPage()">Reset Filters</button>
@@ -155,9 +160,9 @@ function renderEmployees(employees) {
             <tr>
                 <td>${emp.employeeId}</td>
                 <td>${emp.name}</td>
-                <td>${emp.department ? emp.department.departmentName : 'N/A'}</td>
+                <td>${emp.departmentName ? emp.departmentName : 'N/A'}</td>
                 <td>${emp.dateOfBirth}</td>
-                <td>${emp.salaryAmount}</td>
+                <td>${parseFloat(emp.salaryAmount)}</td>
                 <td>
                     <button onclick="openEditModal('${emp.employeeId}')">Edit</button>
                     <button onclick="removeEmployee('${emp.employeeId}')">Remove</button>
@@ -189,13 +194,13 @@ function renderEmployees(employees) {
                 <h3>Edit Employee</h3>
                 <form id="update-form">
                     <label>Name</label>
-                    <input type="text" name="name" pattern="[A-Za-z0-9-]+" title="Only letters and numbers allowed" required />
+                    <input type="text" name="name" title="Only letters and numbers allowed" required />
                     <label>Date of Birth</label>
                     <input type="date" name="dateOfBirth" required />
                     <label>Salary</label>
                     <input type="number" step="any" name="salary"/>
                     <label>Department</label>
-                    <input type="text" name="departmentName"/>
+                    <input type="text" class="department" name="departmentName"/>
                     <button class="btn primary" type="submit">Update</button>
                 </form>
             </div>
@@ -208,15 +213,15 @@ function renderEmployees(employees) {
                 <h3>Add Employee</h3>
                 <form id="add-form">
                     <label>Employee ID</label>
-                    <input type="text" name="employeeId" pattern="[A-Za-z0-9]+" required />
+                    <input type="text" name="employeeId" required />
                     <label>Name</label>
-                    <input type="text" name="name" pattern="[A-Za-z0-9]+" required />
+                    <input type="text" name="name" required />
                     <label>Date of Birth</label>
                     <input type="date" name="dateOfBirth" id="dateField" required />
                     <label>Salary</label>
                     <input type="number" step="any" min=0 name="salary"/>
                     <label>Department</label>
-                    <input type="text" name="departmentName"/>
+                    <input type="text" class="department" name="departmentName"/>
                     <button class="btn primary" type="submit">Add</button>
                 </form>
             </div>
@@ -230,7 +235,7 @@ function renderEmployees(employees) {
     }
 
     /* ------------------------------TEXT VALIDATION-----------------------------------*/
-    const inputs = document.querySelectorAll("input[type=text]");
+    const inputs = document.querySelectorAll("input[type=text]:not(.department)");
     inputs.forEach(input => {
         input.addEventListener("input", () => {
             const original = input.value; const sanitized = sanitizeInput(original);
@@ -278,7 +283,7 @@ async function filterByAge() {
     if (!age) return alert("Enter an age to filter.");
 
     try {
-        const employees = await fetchEmployees(`/user/employees/all/age?age=${age}&page=0&size=10`);
+        const employees = await fetchEmployees(`${API_EMP_BASE}/all/age?age=${age}&page=0&size=10`);
 
         if (employees === null) {
             return null;
@@ -293,15 +298,19 @@ async function filterByAge() {
 // Filter by department
 async function filterByDepartment() {
     const dept = document.getElementById("filter-department").value.trim();
-    if (!dept) return alert("Enter a department to filter.");
+    if (!dept) return showToast("Enter a department to filter.");
 
     try {
-        const employees = await fetchEmployees(`/user/employees/all/department?department=${encodeURIComponent(dept)}&page=0&size=10`);
+        const employees = await fetchEmployees(`${API_EMP_BASE}/all/department?department=${encodeURIComponent(dept)}&page=0&size=10`);
+
+        if (employees === null) {
+            return null;
+        }
+
+        renderEmployees(employees);
     } catch (err) {
         showToast("Error: " + err.message);
     }
-
-    renderEmployees(employees);
 }
 
 async function addEmployee() {
@@ -316,23 +325,23 @@ async function addEmployee() {
             departmentName: form.departmentName.value
         }
 
-        const response = await fetch(`/user/employee/add`, {
+        const response = await fetch(`${API_EMP_BASE}/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
             credentials: "same-origin"
         });
 
-        if (!response.ok) {
-            showToast("Failed to add employee!");
-        }
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || data);
 
         closeAddModal();
-
+        currentPage = 0;
         loadEmployeesPage();
 
     } catch (err) {
-        alert("Error adding employees: " + err.message);
+        showToast("Error adding employees: " + err.message);
     }
 }
 
@@ -348,19 +357,22 @@ async function updateEmployee() {
             departmentName: form.departmentName.value
         };
 
-        const response = await fetch(`/user/employee/update?employeeId=${currentEditEmployeeId}`, {
+        const response = await fetch(`${API_EMP_BASE}/update?employeeId=${currentEditEmployeeId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
             credentials: "same-origin"
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            showToast(response.error);
+            showToast(data.error);
+            return
         }
 
         closeEditModal();
-
+        currentPage = 0;
         loadEmployeesPage();
 
     } catch (err) {
@@ -370,7 +382,7 @@ async function updateEmployee() {
 
 
 async function removeEmployee(employeeId) {
-    const response = await fetch(`/user/employee/delete?employeeId=${employeeId}`, {
+    const response = await fetch(`${API_EMP_BASE}/delete?employeeId=${employeeId}`, {
         method: "DELETE",
         credentials: "same-origin"
     });
@@ -382,7 +394,7 @@ async function removeEmployee(employeeId) {
     const data = await response.json();
 
     showToast("Deleted: Employee Code: " + data.employeeId + ", " + data.name);
-
+    currentPage = 0;
     await loadEmployeesPage();
 }
 
@@ -403,7 +415,7 @@ function openEditModal(employeeId) {
     form.elements["name"].value = emp.name;
     form.elements["dateOfBirth"].value = emp.dateOfBirth;
     form.elements["salary"].value = parseFloat(emp.salary);
-    form.elements["departmentName"].value = emp.department ? emp.department.departmentName : "";
+    form.elements["departmentName"].value = emp.departmentName != "N/A" ? emp.departmentName : "";
 
     console.log("Open edit modal for employee code:", employeeId);
 }

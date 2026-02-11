@@ -1,6 +1,7 @@
 package com.capstone.employeemanagementsystem.services;
 
 import com.capstone.employeemanagementsystem.dto.EmployeeDto;
+import com.capstone.employeemanagementsystem.exception.DepartmentNotFoundException;
 import com.capstone.employeemanagementsystem.models.Manager;
 import com.capstone.employeemanagementsystem.repositories.DepartmentRepository;
 import com.capstone.employeemanagementsystem.repositories.ManagerRepository;
@@ -45,7 +46,7 @@ public class UserRegisterService {
         }
         else {
             newManager.setDepartment(departmentRepository.findDepartmentByDepartmentNameIgnoreCase(manager.department())
-                    .orElseThrow(() -> new NoSuchElementException("Department not Found")));
+                    .orElseThrow(() -> new DepartmentNotFoundException("Department not Found")));
         }
 
         /* works, child employee updated */

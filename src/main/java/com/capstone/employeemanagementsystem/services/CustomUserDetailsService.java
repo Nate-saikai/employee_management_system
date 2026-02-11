@@ -21,11 +21,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         System.out.println("Attempting login for person id: " + managerId);
 
         return managerRepository.findManagerByEmployeeId(managerId)
-                .map(person -> {
-                    System.out.println("Found user: " + person.getName());
+                .map(manager -> {
+                    System.out.println("Found user: " + manager.getName());
                     return org.springframework.security.core.userdetails.User
-                            .withUsername(person.getEmployeeId())
-                            .password(person.getPasswordHash()) // hashed password from DB
+                            .withUsername(manager.getEmployeeId())
+                            .password(manager.getPasswordHash()) // hashed password from DB
                             .roles("ADMIN")
                             .build();
                 })

@@ -13,7 +13,7 @@ async function loadHomePage() {
                     Login
                 </a>
                 <a href="/register" class="btn secondary" onclick="navigate(event)">
-                    Register Employee
+                    Register Manager
                 </a>
             </div>
         </section>

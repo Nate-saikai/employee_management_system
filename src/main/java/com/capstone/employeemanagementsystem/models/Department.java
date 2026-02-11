@@ -1,6 +1,5 @@
 package com.capstone.employeemanagementsystem.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -25,7 +24,7 @@ public class Department {
     @NotBlank
     private String departmentName;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "department")
     @JsonManagedReference
     private List<Person> personList;
 

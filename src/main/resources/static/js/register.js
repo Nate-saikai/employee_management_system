@@ -3,7 +3,7 @@ function loadRegisterPage() {
 
     app.innerHTML = `
         <section class="auth-card">
-            <h2>Register Employee</h2>
+            <h2>Register Manager</h2>
             <form id="register-form">
                 <label>Employee ID</label>
                 <input type="text" name="employeeId" id="safeInput" pattern="[A-Za-z0-9-]+" title="Only letters, numbers, and dashes allowed" required />
@@ -32,7 +32,7 @@ function loadRegisterPage() {
 
     // Get today's date in YYYY-MM-DD format
     const today = new Date();
-    const yyyy = today.getFullYear();
+    const yyyy = today.getFullYear() - 21;
     const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
     const dd = String(today.getDate()).padStart(2, '0');
 
@@ -67,15 +67,15 @@ function loadRegisterPage() {
                 });
 
                 if (response.ok) {
-                    alert("Manager registered!");
+                    showToast("Manager registered!", "success");
                     history.pushState({}, "", "/");
                     route();
                 } else {
-                    const text = await response.text();
-                    alert("Error: " + text);
+                    const data = await response.json();
+                    showToast("Error: " + data.error);
                 }
             } catch (err) {
-                alert("Error: " + err.message);
+                showToast("Error: " + err.message);
             }
         });
 }

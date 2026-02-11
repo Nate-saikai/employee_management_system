@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class SpaController {
-    @GetMapping({"/", "/login", "/register", "/employees/**"})
+    @GetMapping({"/", "/login", "/register", "/employees/**", "/departments/**"})
     public String forward() {
         return "index";
     }

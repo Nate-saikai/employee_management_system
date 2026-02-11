@@ -1,6 +1,10 @@
 package com.capstone.employeemanagementsystem.services;
 
+import com.capstone.employeemanagementsystem.dto.EmployeeResponseDto;
+import com.capstone.employeemanagementsystem.dto.NewEmployeeDto;
 import com.capstone.employeemanagementsystem.dto.UpdateEmployeeDto;
+import com.capstone.employeemanagementsystem.exception.DepartmentNotFoundException;
+import com.capstone.employeemanagementsystem.exception.EmployeeNotFoundException;
 import com.capstone.employeemanagementsystem.models.Department;
 import com.capstone.employeemanagementsystem.models.Employee;
 import com.capstone.employeemanagementsystem.models.Person;
@@ -15,14 +19,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.capstone.employeemanagementsystem.services.MathCalculationsService.calculateAge;
 
 @AllArgsConstructor
 @Service
-public class EmployeeProcessingService implements ProcessingService{
+public class EmployeeProcessingService implements PersonProcessingService {
 
     private final DepartmentRepository departmentRepository;
 
@@ -59,12 +63,18 @@ public class EmployeeProcessingService implements ProcessingService{
     @Override
     public ResponseEntity<?> generateReport(String department, Pageable pageable) {
 
-        Department deptExists = departmentRepository.findDepartmentByDepartmentNameIgnoreCase(department)
-                .orElseThrow(() -> new NoSuchElementException("This company does not have that department!"));
+        List<Department> deptExists = departmentRepository.findAllByDepartmentNameContainsIgnoreCase(department);
 
-        Page<Employee> allEmpByDept = employeeRepository.findAllByDepartment(deptExists, pageable);
+        if (deptExists.isEmpty()) throw new DepartmentNotFoundException("No departments match: " + department);
 
-        if (allEmpByDept.isEmpty()) return ResponseEntity.ok("No Employees Found");
+        Page<EmployeeResponseDto> allEmpByDept = employeeRepository.findAllByDepartmentIn(deptExists, pageable)
+                .map(emp -> new EmployeeResponseDto(
+                    emp.getEmployeeId(),
+                    emp.getName(),
+                    emp.getDateOfBirth(),
+                    emp.getSalaryAmount(),
+                    emp.getDepartment() == null ? null : emp.getDepartment().getDepartmentName()
+                ));
 
         return ResponseEntity.ok(allEmpByDept);
     }
@@ -79,7 +89,14 @@ public class EmployeeProcessingService implements ProcessingService{
     public ResponseEntity<?> generateReport(Integer age, Pageable pageable) {
 
         /* ----------------------- NATIVE SQL IS WORKING -------------------------- */
-        Page<Employee> empAge = employeeRepository.findEmployeesByExactAge(age, pageable);
+        Page<EmployeeResponseDto> empAge = employeeRepository.findEmployeesByExactAge(age, pageable)
+                .map(emp -> new EmployeeResponseDto(
+                        emp.getEmployeeId(),
+                        emp.getName(),
+                        emp.getDateOfBirth(),
+                        emp.getSalaryAmount(),
+                        emp.getDepartment() == null ? null : emp.getDepartment().getDepartmentName()
+                ));
 
         return ResponseEntity.ok(empAge);
     }
@@ -97,10 +114,10 @@ public class EmployeeProcessingService implements ProcessingService{
      */
     @Override
     @Transactional
-    public ResponseEntity<?> cdOps(String select, Employee employee) {
+    public ResponseEntity<?> cdOps(String select, NewEmployeeDto employeeDto) {
         return switch (select) {
-            case "add" -> ResponseEntity.ok(addEmployee(employee));
-            case "delete" -> ResponseEntity.ok(deleteEmployee(employee));
+            case "add" -> ResponseEntity.ok(addEmployee(employeeDto));
+            case "delete" -> ResponseEntity.ok(deleteEmployee(employeeDto));
             default -> throw new IllegalArgumentException("Choice is invalid!");
         };
     }
@@ -121,8 +138,15 @@ public class EmployeeProcessingService implements ProcessingService{
      * @param pageable {@link Pageable}
      * @return {@link Page} of all employees and details
      */
-    private Page<Employee> getAllEmployeeDetails(Pageable pageable) {
-        return employeeRepository.findAll(pageable);
+    @Transactional
+    private Page<EmployeeResponseDto> getAllEmployeeDetails(Pageable pageable) {
+        return employeeRepository.findAll(pageable).map(emp -> new EmployeeResponseDto(
+                emp.getEmployeeId(),
+                emp.getName(),
+                emp.getDateOfBirth(),
+                emp.getSalaryAmount(),
+                emp.getDepartment() == null ? null : emp.getDepartment().getDepartmentName()
+        ));
     }
 
     /**
@@ -132,19 +156,39 @@ public class EmployeeProcessingService implements ProcessingService{
      */
     private Employee getEmployeeDetails(Long id) {
         return employeeRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Employee does not exist!"));
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee does not exist!"));
     }
 
     /* ------------------------------------------------------------------------------------- */
     /* ------------------------------------ CRUD OPERATIONS -------------------------------- */
     /* ------------------------------------------------------------------------------------- */
 
-    // TODO: Improve this using DTO request payload
-    protected Employee addEmployee(Employee addEmployee) {
+    protected Employee addEmployee(NewEmployeeDto newEmployeeDto) {
 
-        Optional<Employee> empExists = employeeRepository.findEmployeeByEmployeeId(addEmployee.getEmployeeId());
+        Employee addEmployee = new Employee();
+        addEmployee.setEmployeeId(newEmployeeDto.employeeId());
+        addEmployee.setName(newEmployeeDto.name());
+        addEmployee.setDateOfBirth(newEmployeeDto.dateOfBirth());
 
-        if (empExists.isPresent()) throw new IllegalArgumentException("Employee already employed");
+        if (newEmployeeDto.salary() == null) {
+            addEmployee.setSalaryAmount(0d);
+        }
+        else {
+            addEmployee.setSalaryAmount(newEmployeeDto.salary());
+        }
+
+        Department thisDepartment = new Department();
+        if (newEmployeeDto.departmentName().isBlank()) {
+            addEmployee.setDepartment(null);
+        }
+        else {
+            thisDepartment.setDepartmentName(newEmployeeDto.departmentName());
+            addEmployee.setDepartment(thisDepartment);
+        }
+
+//        Optional<Employee> empExists = employeeRepository.findEmployeeByEmployeeId(addEmployee.getEmployeeId());
+//
+//        if (empExists.isPresent()) throw new IllegalArgumentException("Employee already employed");
 
         if (addEmployee.getDepartment() != null) {
             Optional<Department> deptExists = departmentRepository.findDepartmentByDepartmentNameIgnoreCase(addEmployee.getDepartment().getDepartmentName());
@@ -160,13 +204,12 @@ public class EmployeeProcessingService implements ProcessingService{
         return employeeRepository.save(addEmployee);
     }
 
-    // TODO: Improve this using DTO request payload
-    protected Employee deleteEmployee(Employee employee) {
+    protected Employee deleteEmployee(NewEmployeeDto employeeDto) {
 
-        Employee deletedEmployee = employeeRepository.findById(employee.getPersonId()).
-                orElseThrow(() -> new NoSuchElementException("Employee does not exist!"));
+        Employee deletedEmployee = employeeRepository.findEmployeeByEmployeeId(employeeDto.employeeId()).
+                orElseThrow(() -> new EmployeeNotFoundException("Employee does not exist!"));
 
-        employeeRepository.delete(employee);
+        employeeRepository.delete(deletedEmployee);
 
         return deletedEmployee;
     }
@@ -200,7 +243,7 @@ public class EmployeeProcessingService implements ProcessingService{
                     .findDepartmentByDepartmentNameIgnoreCase(updateEmployeeDto.departmentName());
 
             if (deptExists.isEmpty()) {
-                return ResponseEntity.badRequest().body("This department does not exist.");
+                throw new DepartmentNotFoundException("This department does not exist.");
             }
 
             // -------------------------------------------------------------------------------------
@@ -213,7 +256,7 @@ public class EmployeeProcessingService implements ProcessingService{
                     .findEmployeeByDepartmentAndNameIgnoreCase(deptExists.get(), employee.getName());
 
             if (member.isPresent()) {
-                return ResponseEntity.badRequest().body("Employee already belongs to department " + updateEmployeeDto.departmentName());
+                return ResponseEntity.badRequest().body(Map.of("error", "Employee already belongs to department " + updateEmployeeDto.departmentName()));
             }
 
             // -------------------------------------------------------------------------------------
@@ -221,21 +264,26 @@ public class EmployeeProcessingService implements ProcessingService{
             // Bring in the new recruit
             // -------------------------------------------------------------------------------------
 
+            employee.setDepartment(deptExists.get());
             deptExists.get().getPersonList().add(employee);
             updated = true;
         }
 
         if (!updated) {
-            return ResponseEntity.badRequest().body("No Updates Made.");
+            return ResponseEntity.badRequest().body(Map.of("error", "No Updates Made."));
         }
 
-        return ResponseEntity.ok("Updates made for: " + employee.getName());
+        return ResponseEntity.ok(Map.of("success", "Updates made for: " + employee.getName()));
     }
 
     /* ------------------------------------------------------------------------------------- */
     /* --------------------------------- AVERAGING OPERATIONS ------------------------------ */
     /* ------------------------------------------------------------------------------------- */
 
+    /**
+     *
+     * @return {@link Double} average age of all employees
+     */
     public Double ageAverage() {
 
         List<Employee> allEmployees = employeeRepository.findAll();
@@ -251,6 +299,10 @@ public class EmployeeProcessingService implements ProcessingService{
                 .sum() / allEmployees.size();
     }
 
+    /**
+     *
+     * @return {@link Double} average salary of all employees
+     */
     public Double salaryAverage() {
 
         List<Employee> allEmployees = employeeRepository.findAll();

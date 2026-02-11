@@ -28,7 +28,7 @@ public abstract class Person {
     @NotBlank
     private LocalDate dateOfBirth;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "departmentId")
     @JsonBackReference
     private Department department;

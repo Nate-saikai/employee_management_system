@@ -81,21 +81,21 @@ nav a {
 }
 
 /* Employees table */
-.employees-list table {
+.table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
 }
-.employees-list th, .employees-list td {
+.th, .td {
     border: 1px solid #ddd;
     padding: 0.75rem;
     text-align: left;
 }
-.employees-list th {
+.th {
     background-color: #1f3a5f;
     color: white;
 }
-.employees-list tr:hover {
+.tr:hover {
     background-color: #f0f4f8;
 }
 
@@ -307,14 +307,14 @@ nav a {
 }
 
 /* Employees list section */
-.employees-list {
+.employees-list, .departments-list{
     margin-top: 2rem;
     background: #fff;
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-.employees-list h2 {
+.employees-list h2, .departments-list h2 {
     margin-bottom: 1rem;
     color: #1f3a5f;
 }
@@ -354,31 +354,31 @@ nav a {
 }
 
 /* Table polish */
-.employees-list table {
+.employees-list table, .departments-list table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
     border-radius: 6px;
     overflow: hidden;
 }
-.employees-list th, .employees-list td {
+.employees-list th, .employees-list td, .departments-list th, .departments-list td {
     border: 1px solid #ddd;
     padding: 0.75rem;
     text-align: left;
 }
-.employees-list th {
+.employees-list th, .departments-list th {
     background-color: #1f3a5f;
     color: white;
 }
-.employees-list tr:nth-child(even) {
+.employees-list tr:nth-child(even), .departments-list tr:nth-child(even){
     background-color: #f9fbfd;
 }
-.employees-list tr:hover {
+.employees-list tr:hover, .departments-list tr:hover {
     background-color: #eef3f9;
 }
 
 /* Action buttons inside table */
-.employees-list td button {
+.employees-list td button, .departments-list td button {
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
     border: none;
@@ -386,14 +386,14 @@ nav a {
     margin-right: 0.5rem;
     font-size: 0.85rem;
 }
-.employees-list td button:hover {
+.employees-list td button:hover, .departments-list td button:hover {
     opacity: 0.9;
 }
-.employees-list td button:first-child {
+.employees-list td button:first-child, .departments-list td button:first-child {
     background: #f39c12;
     color: #fff;
 }
-.employees-list td button:last-child {
+.employees-list td button:last-child, .departments-list td button:last-child {
     background: #e74c3c;
     color: #fff;
 }

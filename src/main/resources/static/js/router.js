@@ -2,7 +2,8 @@ const routes = {
     "/": loadHomePage,
     "/login": loadLoginPage,
     "/register": loadRegisterPage,
-    "/employees": loadEmployeesPage
+    "/employees": loadEmployeesPage,
+    "/departments": loadDepartmentsPage
 };
 
 function navigate(event) {
@@ -18,11 +19,11 @@ function route() {
     console.log("Routing to:", window.location.pathname);
     const path = window.location.pathname;
 
-    if (path.startsWith("/employees/")) {
-        const id = path.split("/")[2];
-        loadEmployeeDetailsPage(id);
-        return;
-    }
+//    if (path.startsWith("/employees/")) {
+//        const id = path.split("/")[2];
+//        loadEmployeeDetailsPage(id);
+//        return;
+//    }
 
     const handler = routes[path] || loadHomePage;
     handler();
